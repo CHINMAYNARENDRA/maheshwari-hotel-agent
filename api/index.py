@@ -316,7 +316,7 @@ async def place_order(req: OrderRequest):
 
 @app.get("/")
 async def root():
-    return FileResponse("frontend/maheshwari.html")
+    return FileResponse("../public/maheshwari.html")
 
 if __name__ == "__main__":
     import uvicorn
