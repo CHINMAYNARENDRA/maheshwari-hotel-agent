@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maheshwari Hotel — Fine Dining</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0C0A08;--paper:#FAF7F2;--gold:#C8960C;--gold2:#E8B84B;
+  --ember:#7C2D12;--spice:#9A3412;--cream:#F5EDD8;
+  --glass:rgba(250,247,242,0.06);--glass2:rgba(250,247,242,0.12);
+  --border:rgba(200,150,12,0.2);--border2:rgba(200,150,12,0.4);
+  --font-d:'Cormorant Garamond',Georgia,serif;
+  --font-u:'DM Sans',system-ui,sans-serif;
+}
+html,body{height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:var(--font-u)}
+#bg-canvas{position:fixed;inset:0;z-index:0;opacity:.35}
+.noise{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:.4}
+.shell{position:relative;z-index:2;display:grid;grid-template-columns:380px 1fr;height:100vh;overflow:hidden}
+
+/* LEFT */
+.left{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;
+  background:linear-gradient(175deg,rgba(12,10,8,.95) 0%,rgba(28,12,4,.98) 100%);position:relative}
+.left::before{content:'';position:absolute;top:-120px;left:-80px;width:320px;height:320px;
+  border-radius:50%;background:radial-gradient(circle,rgba(200,150,12,.08) 0%,transparent 70%);pointer-events:none}
+.identity{padding:36px 32px 28px;position:relative}
+.mandala{width:48px;height:48px;margin-bottom:16px;display:flex;align-items:center;justify-content:center}
+.hotel-name{font-family:var(--font-d);font-size:2rem;font-weight:300;color:var(--gold2);line-height:1.1;letter-spacing:.02em}
+.hotel-name em{font-style:italic;font-weight:300;color:var(--paper);opacity:.7}
+.hotel-since{margin-top:6px;font-size:.68rem;font-weight:300;letter-spacing:.18em;color:var(--gold);opacity:.6}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);margin:0 32px}
+.menu-head{padding:20px 32px 10px;font-size:.6rem;letter-spacing:.16em;color:var(--gold);opacity:.5;font-weight:500}
+.menu-scroll{flex:1;overflow-y:auto;padding:0 16px 24px;scrollbar-width:none}
+.menu-scroll::-webkit-scrollbar{display:none}
+.cat-label{padding:14px 16px 6px;font-size:.58rem;letter-spacing:.14em;color:var(--spice);font-weight:500;opacity:.8}
+.dish{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:8px;cursor:pointer;
+  border:1px solid transparent;margin-bottom:2px;transition:all .2s;position:relative;overflow:hidden}
+.dish::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--gold);
+  transform:scaleY(0);transition:transform .2s;border-radius:2px}
+.dish:hover{background:var(--glass);border-color:var(--border)}
+.dish:hover::before,.dish.selected::before{transform:scaleY(1)}
+.dish.selected{background:rgba(200,150,12,.08);border-color:var(--border2)}
+.dish-icon{font-size:1.3rem;flex-shrink:0;width:28px;text-align:center}
+.dish-info{flex:1;min-width:0}
+.dish-name{font-size:.84rem;color:var(--paper);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dish-desc{font-size:.68rem;color:var(--paper);opacity:.4;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dish-price{font-family:var(--font-d);font-size:1rem;font-weight:600;color:var(--gold2);flex-shrink:0;white-space:nowrap}
+
+/* RIGHT */
+.right{display:flex;flex-direction:column;overflow:hidden;position:relative;background:rgba(12,10,8,.6)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 36px;height:64px;
+  border-bottom:1px solid var(--border);flex-shrink:0;backdrop-filter:blur(20px)}
+.tb-left{display:flex;align-items:center;gap:12px}
+.tb-avatar{width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--ember),var(--spice));
+  display:flex;align-items:center;justify-content:center;font-size:.9rem;
+  border:1px solid rgba(200,150,12,.3)}
+.tb-name{font-family:var(--font-d);font-size:1rem;font-weight:400;color:var(--gold2)}
+.tb-status{font-size:.65rem;color:var(--paper);opacity:.4;margin-top:1px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;
+  box-shadow:0 0 0 3px rgba(74,222,128,.15);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Pipeline */
+.pipeline{display:flex;align-items:center;padding:0 36px;height:56px;
+  border-bottom:1px solid var(--border);flex-shrink:0;gap:0;background:rgba(12,10,8,.4)}
+.ps{display:flex;align-items:center;gap:8px;flex:1;position:relative}
+.ps:not(:last-child)::after{content:'';position:absolute;left:112px;right:0;top:50%;height:1px;
+  background:var(--border);transition:background .5s;z-index:0}
+.ps.done:not(:last-child)::after{background:var(--gold)}
+.ps-icon{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:.8rem;
+  background:var(--ink);z-index:1;flex-shrink:0;transition:all .3s}
+.ps.active .ps-icon{border-color:var(--gold2);background:rgba(200,150,12,.12);
+  box-shadow:0 0 0 4px rgba(200,150,12,.08);animation:ps-pulse 1.5s infinite}
+.ps.done .ps-icon{border-color:#4ade80;background:rgba(74,222,128,.1)}
+.ps.error .ps-icon{border-color:#f87171;background:rgba(248,113,113,.1)}
+@keyframes ps-pulse{0%,100%{box-shadow:0 0 0 4px rgba(200,150,12,.08)}50%{box-shadow:0 0 0 8px rgba(200,150,12,.03)}}
+.ps-text{z-index:1}
+.ps-label{font-size:.65rem;color:var(--paper);opacity:.35;transition:all .3s;white-space:nowrap}
+.ps.active .ps-label{opacity:1;color:var(--gold2)}
+.ps.done .ps-label{opacity:.7;color:var(--paper)}
+.ps.error .ps-label{opacity:1;color:#f87171}
+
+/* Messages */
+.msgs{flex:1;overflow-y:auto;padding:28px 36px;display:flex;flex-direction:column;gap:14px;
+  scrollbar-width:thin;scrollbar-color:rgba(200,150,12,.15) transparent}
+.msg{display:flex;gap:10px;max-width:78%;animation:fade-up .25s ease}
+@keyframes fade-up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;flex-shrink:0;margin-top:2px}
+.msg.bot .av{background:linear-gradient(135deg,var(--ember),var(--spice));border:1px solid rgba(200,150,12,.25)}
+.msg.user .av{background:rgba(200,150,12,.15);border:1px solid rgba(200,150,12,.25)}
+.bubble{padding:11px 16px;border-radius:14px;font-size:.85rem;line-height:1.65}
+.msg.bot .bubble{background:var(--glass);border:1px solid var(--border);border-top-left-radius:3px;color:var(--paper)}
+.msg.user .bubble{background:rgba(200,150,12,.1);border:1px solid rgba(200,150,12,.2);border-top-right-radius:3px;color:var(--paper)}
+.bubble strong{color:var(--gold2)}
+.pill{align-self:center;padding:5px 14px;border-radius:20px;font-size:.68rem;
+  border:1px solid var(--border);background:var(--glass);color:var(--paper);
+  opacity:.6;animation:fade-up .2s ease}
+.pill.ok{border-color:rgba(74,222,128,.3);color:#86efac;opacity:1;background:rgba(74,222,128,.05)}
+.pill.err{border-color:rgba(248,113,113,.3);color:#fca5a5;opacity:1;background:rgba(248,113,113,.05)}
+.typing{display:flex;gap:5px;align-items:center;padding:12px 16px}
+.tdot{width:6px;height:6px;border-radius:50%;background:var(--gold);opacity:.3;
+  animation:tdot 1.2s ease-in-out infinite}
+.tdot:nth-child(2){animation-delay:.2s}.tdot:nth-child(3){animation-delay:.4s}
+@keyframes tdot{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.bill{align-self:center;width:100%;max-width:300px;border:1px solid rgba(200,150,12,.5);
+  border-radius:12px;overflow:hidden;animation:fade-up .3s ease;
+  background:linear-gradient(135deg,rgba(200,150,12,.08),rgba(124,45,18,.08))}
+.bill-head{padding:16px 20px 10px;text-align:center;border-bottom:1px dashed rgba(200,150,12,.25)}
+.bill-hotel{font-family:var(--font-d);font-size:.75rem;letter-spacing:.1em;color:var(--gold);opacity:.7}
+.bill-title{font-family:var(--font-d);font-size:1.1rem;font-weight:300;color:var(--paper);margin-top:2px}
+.bill-body{padding:14px 20px}
+.bill-row{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0}
+.bill-item{font-size:.82rem;color:var(--paper)}
+.bill-amt{font-family:var(--font-d);font-size:.95rem;color:var(--gold2)}
+.bill-divider{height:1px;background:rgba(200,150,12,.2);margin:8px 0}
+.bill-total-row{display:flex;justify-content:space-between;align-items:baseline}
+.bill-total-label{font-size:.72rem;color:var(--paper);opacity:.5;letter-spacing:.05em}
+.bill-total{font-family:var(--font-d);font-size:1.6rem;font-weight:600;color:var(--gold2)}
+.bill-foot{padding:10px 20px;text-align:center;border-top:1px dashed rgba(200,150,12,.25);
+  font-size:.65rem;color:var(--paper);opacity:.4;letter-spacing:.06em}
+
+/* Input */
+.input-area{padding:16px 36px 22px;border-top:1px solid var(--border);flex-shrink:0;
+  background:rgba(12,10,8,.5);backdrop-filter:blur(12px)}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.chip{padding:5px 13px;border-radius:20px;border:1px solid var(--border);background:var(--glass);
+  color:var(--paper);font-size:.7rem;font-family:var(--font-u);cursor:pointer;
+  transition:all .15s;opacity:.7}
+.chip:hover{border-color:var(--border2);opacity:1;background:var(--glass2)}
+.input-row{display:flex;gap:10px;align-items:flex-end}
+.inp{flex:1;background:var(--glass);border:1px solid var(--border);border-radius:10px;
+  padding:11px 16px;color:var(--paper);font-family:var(--font-u);font-size:.85rem;
+  resize:none;outline:none;min-height:44px;max-height:88px;line-height:1.5;transition:border-color .2s}
+.inp::placeholder{color:rgba(250,247,242,.25)}
+.inp:focus{border-color:rgba(200,150,12,.45)}
+.send{width:44px;height:44px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,var(--gold),var(--ember));color:var(--ink);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:1rem;font-weight:700;transition:all .15s;flex-shrink:0}
+.send:hover{transform:scale(1.05);filter:brightness(1.1)}
+.send:active{transform:scale(.97)}
+.send:disabled{opacity:.3;cursor:not-allowed;transform:none}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:100}
+@media(max-width:760px){
+  .shell{grid-template-columns:1fr;grid-template-rows:40vh 1fr;height:100dvh}
+  .left{border-right:none;border-bottom:1px solid var(--border)}
+  .topbar,.input-area{padding-left:16px;padding-right:16px}
+  .msgs{padding:16px}.pipeline{padding:0 16px}.ps-label{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms !important}}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="noise"></div>
+<canvas id="confetti"></canvas>
+
+<div class="shell">
+<aside class="left">
+  <div class="identity">
+    <div class="mandala">
+      <svg width="48" height="48" viewBox="0 0 48 48">
+        <g transform="translate(24,24)">
+          <circle r="20" fill="none" stroke="rgba(200,150,12,.3)" stroke-width=".5"/>
+          <circle r="14" fill="none" stroke="rgba(200,150,12,.5)" stroke-width=".5"/>
+          <circle r="8" fill="none" stroke="rgba(200,150,12,.7)" stroke-width=".5"/>
+          <circle r="3" fill="#C8960C"/>
+          <ellipse cx="0" cy="-14" rx="3" ry="5" fill="rgba(200,150,12,.4)" transform="rotate(0)"/>
+          <ellipse cx="0" cy="-14" rx="3" ry="5" fill="rgba(200,150,12,.4)" transform="rotate(45)"/>
+          <ellipse cx="0" cy="-14" rx="3" ry="5" fill="rgba(200,150,12,.4)" transform="rotate(90)"/>
+          <ellipse cx="0" cy="-14" rx="3" ry="5" fill="rgba(200,150,12,.4)" transform="rotate(135)"/>
+          <ellipse cx="0" cy="-14" rx="3" ry="5" fill="rgba(200,150,12,.4)" transform="rotate(180)"/>
+          <ellipse cx="0" cy="-14" rx="3" ry="5" fill="rgba(200,150,12,.4)" transform="rotate(225)"/>
+          <ellipse cx="0" cy="-14" rx="3" ry="5" fill="rgba(200,150,12,.4)" transform="rotate(270)"/>
+          <ellipse cx="0" cy="-14" rx="3" ry="5" fill="rgba(200,150,12,.4)" transform="rotate(315)"/>
+        </g>
+      </svg>
+    </div>
+    <div class="hotel-name">Maheshwari<br><em>Hotel</em></div>
+    <div class="hotel-since">ESTABLISHED 1987 · AUTHENTIC CUISINE</div>
+  </div>
+  <div class="divider"></div>
+  <div class="menu-head">Today's Menu</div>
+  <div class="menu-scroll">
+    <div class="cat-label">Dal & Vegetarian</div>
+    <div class="dish" onclick="order('Dal Fry')"><div class="dish-icon">🍲</div><div class="dish-info"><div class="dish-name">Dal Fry</div><div class="dish-desc">Classic tempered lentils</div></div><div class="dish-price">₹170</div></div>
+    <div class="dish" onclick="order('Dal Tadka')"><div class="dish-icon">🥣</div><div class="dish-info"><div class="dish-name">Dal Tadka</div><div class="dish-desc">Smoky tadka finish</div></div><div class="dish-price">₹180</div></div>
+    <div class="dish" onclick="order('Dal Makhani')"><div class="dish-icon">🍛</div><div class="dish-info"><div class="dish-name">Dal Makhani</div><div class="dish-desc">Slow-cooked black lentils</div></div><div class="dish-price">₹250</div></div>
+    <div class="dish" onclick="order('Kaju Masala')"><div class="dish-icon">🥜</div><div class="dish-info"><div class="dish-name">Kaju Masala</div><div class="dish-desc">Cashew & spice gravy</div></div><div class="dish-price">₹330</div></div>
+    <div class="dish" onclick="order('Kaju Paneer Masala')"><div class="dish-icon">🧀</div><div class="dish-info"><div class="dish-name">Kaju Paneer Masala</div><div class="dish-desc">Cashew & cottage cheese</div></div><div class="dish-price">₹330</div></div>
+    <div class="dish" onclick="order('Mushroom Matar Masala')"><div class="dish-icon">🍄</div><div class="dish-info"><div class="dish-name">Mushroom Matar Masala</div><div class="dish-desc">Earthy mushroom & peas</div></div><div class="dish-price">₹290</div></div>
+    <div class="cat-label">Seafood Specials</div>
+    <div class="dish" onclick="order('Prawns Sukka')"><div class="dish-icon">🦐</div><div class="dish-info"><div class="dish-name">Prawns Sukka</div><div class="dish-desc">Dry coastal masala · 8 pcs</div></div><div class="dish-price">₹470</div></div>
+    <div class="dish" onclick="order('Prawns Fry')"><div class="dish-icon">🍤</div><div class="dish-info"><div class="dish-name">Prawns Fry</div><div class="dish-desc">Crispy fried · 8 pcs</div></div><div class="dish-price">₹470</div></div>
+    <div class="dish" onclick="order('Prawns Tandoori Tikka')"><div class="dish-icon">🔥</div><div class="dish-info"><div class="dish-name">Prawns Tandoori Tikka</div><div class="dish-desc">Tandoor-smoked · 8 pcs</div></div><div class="dish-price">₹470</div></div>
+    <div class="dish" onclick="order('Fish Tandoori Tikka')"><div class="dish-icon">🐟</div><div class="dish-info"><div class="dish-name">Fish Tandoori Tikka</div><div class="dish-desc">Marinated & grilled · 8 pcs</div></div><div class="dish-price">₹500</div></div>
+  </div>
+</aside>
+
+<main class="right">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-avatar">👨‍🍳</div>
+      <div>
+        <div class="tb-name">Raj, your waiter</div>
+        <div class="tb-status" id="backend-status">Connecting to kitchen…</div>
+      </div>
+    </div>
+    <div class="live-dot" id="live-dot" style="background:#888"></div>
+  </div>
+  <div class="pipeline">
+    <div class="ps" id="ps-llm"><div class="ps-icon">🤖</div><div class="ps-text"><div class="ps-label">Assistant</div></div></div>
+    <div class="ps" id="ps-order"><div class="ps-icon">📋</div><div class="ps-text"><div class="ps-label">Order</div></div></div>
+    <div class="ps" id="ps-cook"><div class="ps-icon">👨‍🍳</div><div class="ps-text"><div class="ps-label">Kitchen</div></div></div>
+    <div class="ps" id="ps-serve"><div class="ps-icon">🛎️</div><div class="ps-text"><div class="ps-label">Serve</div></div></div>
+  </div>
+  <div class="msgs" id="msgs">
+    <div class="msg bot">
+      <div class="av">🍛</div>
+      <div class="bubble">Namaste! Welcome to <strong>Maheshwari Hotel</strong>. 🙏<br><br>I'm Raj, your personal waiter. Browse our menu on the left — click any dish to order instantly, or tell me what you'd like!</div>
+    </div>
+  </div>
+  <div class="input-area">
+    <div class="chips">
+      <div class="chip" onclick="order('Dal Makhani')">🍛 Dal Makhani</div>
+      <div class="chip" onclick="order('Prawns Fry')">🍤 Prawns Fry</div>
+      <div class="chip" onclick="order('Fish Tandoori Tikka')">🐟 Fish Tikka</div>
+      <div class="chip" onclick="send('What do you recommend today?')">✨ Recommend</div>
+    </div>
+    <div class="input-row">
+      <textarea class="inp" id="inp" placeholder="Tell me what you'd like to eat…" rows="1"
+        onkeydown="onKey(event)" oninput="resize(this)"></textarea>
+      <button class="send" id="sendbtn" onclick="handleSend()">➤</button>
+    </div>
+  </div>
+</main>
+</div>
+
+<script>
+// ── BACKGROUND ───────────────────────────
+const bgC=document.getElementById('bg-canvas'),bgCtx=bgC.getContext('2d');
+let W,H,particles=[];
+function resizeBg(){W=bgC.width=window.innerWidth;H=bgC.height=window.innerHeight}
+resizeBg();window.addEventListener('resize',resizeBg);
+function Particle(){
+  this.x=Math.random()*W;this.y=Math.random()*H;
+  this.r=Math.random()*1.5+.3;this.vx=(Math.random()-.5)*.15;this.vy=(Math.random()-.5)*.15;
+  this.alpha=Math.random()*.5+.1;
+  this.color=['#C8960C','#E8B84B','#9A3412','#7C2D12','#FAF7F2'][Math.floor(Math.random()*5)];
+}
+for(let i=0;i<120;i++)particles.push(new Particle());
+function drawBg(){
+  bgCtx.clearRect(0,0,W,H);
+  particles.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+    bgCtx.beginPath();bgCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    bgCtx.fillStyle=p.color;bgCtx.globalAlpha=p.alpha;bgCtx.fill();
+  });
+  bgCtx.globalAlpha=1;
+  for(let i=0;i<particles.length;i++){
+    for(let j=i+1;j<particles.length;j++){
+      const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<90){bgCtx.beginPath();bgCtx.moveTo(particles[i].x,particles[i].y);bgCtx.lineTo(particles[j].x,particles[j].y);
+        bgCtx.strokeStyle='rgba(200,150,12,'+(0.06*(1-d/90))+')';bgCtx.lineWidth=.4;bgCtx.stroke();}
+    }
+  }
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// ── CONFETTI ─────────────────────────────
+const cc=document.getElementById('confetti'),cctx=cc.getContext('2d');
+cc.width=window.innerWidth;cc.height=window.innerHeight;
+let confetti=[],cRunning=false;
+function launchConfetti(){
+  for(let i=0;i<120;i++)confetti.push({
+    x:Math.random()*cc.width,y:-10,vx:(Math.random()-.5)*4,vy:Math.random()*3+2,
+    r:Math.random()*4+2,rot:Math.random()*360,rotv:(Math.random()-.5)*5,
+    color:['#C8960C','#E8B84B','#FAF7F2','#9A3412','#F5EDD8'][Math.floor(Math.random()*5)],
+    shape:Math.random()>.5?'rect':'circle'
+  });
+  if(!cRunning){cRunning=true;animC();}
+}
+function animC(){
+  cctx.clearRect(0,0,cc.width,cc.height);
+  confetti=confetti.filter(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.rot+=p.rotv;p.vy+=.05;
+    cctx.save();cctx.translate(p.x,p.y);cctx.rotate(p.rot*Math.PI/180);cctx.fillStyle=p.color;
+    if(p.shape==='rect')cctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);
+    else{cctx.beginPath();cctx.arc(0,0,p.r,0,Math.PI*2);cctx.fill();}
+    cctx.restore();return p.y<cc.height+20;
+  });
+  if(confetti.length>0)requestAnimationFrame(animC);else cRunning=false;
+}
+
+// ── ICONS ────────────────────────────────
+const ICONS={'Dal Fry':'🍲','Dal Tadka':'🥣','Dal Makhani':'🍛','Kaju Masala':'🥜',
+  'Kaju Paneer Masala':'🧀','Mushroom Matar Masala':'🍄','Prawns Sukka':'🦐',
+  'Prawns Fry':'🍤','Prawns Tandoori Tikka':'🔥','Fish Tandoori Tikka':'🐟'};
+
+// ── BACKEND CHECK ─────────────────────────
+const API='http://localhost:8000';
+async function checkBackend(){
+  try{
+    const r=await fetch(API+'/api/order',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:'ping'}),signal:AbortSignal.timeout(3000)});
+    if(r.ok){
+      document.getElementById('backend-status').textContent='Kitchen is open · Groq powered';
+      document.getElementById('live-dot').style.background='#4ade80';
+      document.getElementById('live-dot').style.boxShadow='0 0 0 3px rgba(74,222,128,.15)';
+    }
+  }catch(e){
+    document.getElementById('backend-status').textContent='Kitchen offline — start server first';
+    document.getElementById('live-dot').style.background='#f87171';
+  }
+}
+checkBackend();
+
+// ── STATE ────────────────────────────────
+let busy=false;
+function setPipe(id,state){document.getElementById('ps-'+id).className='ps '+state}
+function resetPipe(){['llm','order','cook','serve'].forEach(s=>setPipe(s,''))}
+
+// ── DOM HELPERS ──────────────────────────
+const W2=document.getElementById('msgs');
+function addMsg(role,html){
+  const d=document.createElement('div');d.className='msg '+role;
+  if(role==='bot')d.innerHTML=`<div class="av">🍛</div><div class="bubble">${html}</div>`;
+  else d.innerHTML=`<div class="bubble">${html}</div><div class="av">👤</div>`;
+  W2.appendChild(d);W2.scrollTop=W2.scrollHeight;
+}
+function addPill(text,type=''){
+  const d=document.createElement('div');d.className='pill '+type;d.textContent=text;
+  W2.appendChild(d);W2.scrollTop=W2.scrollHeight;
+}
+function addBill(dish,qty,price){
+  const d=document.createElement('div');d.className='bill';
+  const icon=ICONS[dish]||'🍽️';
+  d.innerHTML=`<div class="bill-head"><div class="bill-hotel">MAHESHWARI HOTEL</div><div class="bill-title">${icon} ${dish}</div></div>
+    <div class="bill-body"><div class="bill-row"><span class="bill-item">Quantity</span><span class="bill-amt">${qty}</span></div>
+    <div class="bill-divider"></div><div class="bill-total-row"><span class="bill-total-label">TOTAL</span><span class="bill-total">₹${price}</span></div></div>
+    <div class="bill-foot">Thank you for dining with us 🙏</div>`;
+  W2.appendChild(d);W2.scrollTop=W2.scrollHeight;
+}
+function showTyping(){
+  const d=document.createElement('div');d.className='msg bot';d.id='typing';
+  d.innerHTML=`<div class="av">🍛</div><div class="bubble"><div class="typing"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div>`;
+  W2.appendChild(d);W2.scrollTop=W2.scrollHeight;
+}
+function hideTyping(){const e=document.getElementById('typing');if(e)e.remove();}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function highlightDish(name){
+  document.querySelectorAll('.dish').forEach(d=>{
+    d.classList.toggle('selected',d.querySelector('.dish-name')?.textContent===name);
+  });
+}
+
+// ── CALL BACKEND ─────────────────────────
+async function callBackend(message){
+  const res=await fetch(API+'/api/order',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({message})
+  });
+  if(!res.ok)throw new Error('Server error');
+  return await res.json();
+}
+
+// ── ANIMATE STEPS FROM BACKEND RESPONSE ──
+async function animateSteps(steps){
+  for(const step of steps){
+    await sleep(300);
+    const stage=step.stage;
+    if(stage==='llm'){setPipe('llm','active');await sleep(400);setPipe('llm','done');}
+    else if(stage==='order'){
+      setPipe('order',step.status==='done'?'active':'error');await sleep(500);
+      if(step.status==='done'){setPipe('order','done');addPill('✓ '+step.message,'ok');}
+      else addPill(step.message,'err');
+    }
+    else if(stage==='cook'){
+      setPipe('cook',step.status==='done'?'active':'error');await sleep(800);
+      if(step.status==='done'){setPipe('cook','done');addPill('✓ '+step.message,'ok');}
+      else addPill(step.message,'err');
+    }
+    else if(stage==='serve'){
+      setPipe('serve',step.status==='done'?'active':'error');await sleep(600);
+      if(step.status==='done'){setPipe('serve','done');addPill('✓ '+step.message,'ok');}
+      else addPill(step.message,'err');
+    }
+  }
+}
+
+// ── MAIN FLOW ─────────────────────────────
+async function runPipeline(userText){
+  busy=true;
+  document.getElementById('sendbtn').disabled=true;
+  document.getElementById('inp').disabled=true;
+  resetPipe();
+  setPipe('llm','active');
+  showTyping();
+
+  let result;
+  try{
+    result=await callBackend(userText);
+  }catch(e){
+    hideTyping();
+    addMsg('bot','⚠️ Cannot reach kitchen server. Make sure it\'s running:<br><code style="font-size:.8em;color:var(--gold)">python main.py</code>');
+    finish();return;
+  }
+
+  hideTyping();
+  addMsg('bot',result.llm_response.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>'));
+
+  if(!result.is_menu_related){finish();return;}
+  if(result.dish)highlightDish(result.dish);
+
+  // Animate the pipeline steps
+  await animateSteps(result.steps||[]);
+
+  // Final outcome
+  if(result.serve_status==='served'){
+    await sleep(300);
+    addBill(result.dish,result.quantity,result.price);
+    addMsg('bot',`Your <strong>${result.dish}</strong> is served! Enjoy every bite. 🙏`);
+    launchConfetti();
+    highlightDish(null);
+  }else if(result.order_status!=='confirmed'){
+    addPill('Order could not be placed. Please try again.','err');
+  }else if(result.cook_status!=='cooked'){
+    addPill('Kitchen could not prepare your dish. Sorry!','err');
+  }
+
+  finish();
+}
+
+function finish(){
+  busy=false;
+  document.getElementById('sendbtn').disabled=false;
+  const i=document.getElementById('inp');i.disabled=false;i.focus();
+}
+
+// ── INPUT ─────────────────────────────────
+function order(name){if(!busy)send('I would like to order '+name+' please');}
+async function send(text){
+  if(busy||!text.trim())return;
+  addMsg('user',text);
+  await runPipeline(text);
+}
+async function handleSend(){
+  const inp=document.getElementById('inp'),t=inp.value.trim();
+  if(!t||busy)return;inp.value='';resize(inp);await send(t);
+}
+function onKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleSend();}}
+function resize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,88)+'px';}
+</script>
+</body>
+</html>
